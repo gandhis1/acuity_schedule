@@ -35,8 +35,8 @@ def main():
     # Print out the results
     print("Total Income: $" + str(cumulative_payment))
     for duration, pay in pay_scale.items():
-        print("{0} {1} appointments at ${2} each"
-              .format(appointment_count[duration], duration, pay))
+        print("{0} appointments: {1} at ${2} each"
+              .format(duration, appointment_count[duration], pay))
 
 
 if __name__ == '__main__':
