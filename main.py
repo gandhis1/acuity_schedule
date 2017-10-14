@@ -39,7 +39,8 @@ def main():
     upcoming_appts = [appt for appt in appointment_list
                       if parse(appt["datetime"]).date() >= date.today()]
     for appt in sorted(upcoming_appts, key=lambda x: parse(x["datetime"])):
-        appt_start_datetime = parse(appt["datetime"]).strftime("%b %d %#I:%M")
+        appt_start_datetime = (parse(appt["datetime"])
+                               .strftime("%a %b %d %#I:%M"))
         appt_end_time = parse(appt["endTime"]).strftime("%#I:%M %p")
         appt_name = "{0} {1}".format(appt["firstName"], appt["lastName"])
         appt_duration = appt["duration"]
