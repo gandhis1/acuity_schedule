@@ -97,9 +97,10 @@ def calculate_income(appointment_list, pay_scale):
     log("  Total Income: $" + str(cumulative_payment))
     log("  Total Appointments: " + str(len(appointment_list)))
     for duration, pay in sorted(pay_scale.items(), key=lambda x: x[0]):
-        log("  {0}: {1} at ${2} each = ${3}"
-            .format(duration, appointment_count[duration],
-                    pay, pay * appointment_count[duration]))
+        num_appts = appointment_count[duration]
+        if num_appts > 0:
+            log("  {0}: {1} at ${2} each = ${3}"
+                .format(duration, num_appts, pay, pay * num_appts))
 
 
 if __name__ == '__main__':
