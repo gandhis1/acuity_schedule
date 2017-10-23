@@ -31,6 +31,28 @@ def num_to_order(num):
     return str(num) + suffix
 
 
+def calculate_income(appointment_list, pay_scale):
+    cumulative_payment = 0.0
+    appointment_durations = []
+    for appointment in appointment_list:
+        duration = appointment["duration"] + "-minute"
+        appointment_durations.append(duration)
+        payment = float(pay_scale[duration])
+        cumulative_payment += payment
+
+    # Count number of each appointment
+    appointment_count = collections.Counter(appointment_durations)
+
+    # Print out the results
+    log("  Total Income: $" + str(cumulative_payment))
+    log("  Total Appointments: " + str(len(appointment_list)))
+    for duration, pay in sorted(pay_scale.items(), key=lambda x: x[0]):
+        num_appts = appointment_count[duration]
+        if num_appts > 0:
+            log("  {0}: {1} at ${2} each = ${3}"
+                .format(duration, num_appts, pay, pay * num_appts))
+
+
 def main():
     # Read in username and password
     config = json.load(open("config.json"))
@@ -109,28 +131,6 @@ def main():
     server.ehlo()
     server.login(gmail_user, gmail_app_password)
     server.sendmail(gmail_user, email_recipients, email_text)
-
-
-def calculate_income(appointment_list, pay_scale):
-    cumulative_payment = 0.0
-    appointment_durations = []
-    for appointment in appointment_list:
-        duration = appointment["duration"] + "-minute"
-        appointment_durations.append(duration)
-        payment = float(pay_scale[duration])
-        cumulative_payment += payment
-
-    # Count number of each appointment
-    appointment_count = collections.Counter(appointment_durations)
-
-    # Print out the results
-    log("  Total Income: $" + str(cumulative_payment))
-    log("  Total Appointments: " + str(len(appointment_list)))
-    for duration, pay in sorted(pay_scale.items(), key=lambda x: x[0]):
-        num_appts = appointment_count[duration]
-        if num_appts > 0:
-            log("  {0}: {1} at ${2} each = ${3}"
-                .format(duration, num_appts, pay, pay * num_appts))
 
 
 if __name__ == '__main__':
