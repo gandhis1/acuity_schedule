@@ -89,9 +89,13 @@ def main():
         appt_name = "{0} {1}".format(appt["firstName"],
                                      appt["lastName"]).title()
         appt_duration = appt["duration"]
+
         if len(appt["forms"]) > 0:
             appt_reason = [x for x in appt["forms"][0]["values"]
                            if x["fieldID"] == 2451841][0]["value"].strip()
+        else:
+            appt_reason = ""
+
         num_appts_same_person = appt_count[appt_name.upper()]
         log("{0} - {1}: {2} ({3} min){4}{5}"
             .format(appt_start_datetime, appt_end_time, appt_name,
