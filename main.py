@@ -37,7 +37,7 @@ def calculate_income(appointment_list, pay_scale):
     for appointment in appointment_list:
         duration = appointment["duration"] + "-minute"
         appointment_durations.append(duration)
-        payment = float(pay_scale[duration])
+        payment = float(pay_scale.get(duration, 0.0))
         cumulative_payment += payment
 
     # Count number of each appointment
@@ -89,8 +89,9 @@ def main():
         appt_name = "{0} {1}".format(appt["firstName"],
                                      appt["lastName"]).title()
         appt_duration = appt["duration"]
-        appt_reason = [x for x in appt["forms"][0]["values"]
-                       if x["fieldID"] == 2451841][0]["value"].strip()
+        if len(appt["forms"]) > 0:
+            appt_reason = [x for x in appt["forms"][0]["values"]
+                           if x["fieldID"] == 2451841][0]["value"].strip()
         num_appts_same_person = appt_count[appt_name.upper()]
         log("{0} - {1}: {2} ({3} min){4}{5}"
             .format(appt_start_datetime, appt_end_time, appt_name,
