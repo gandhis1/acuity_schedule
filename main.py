@@ -2,7 +2,7 @@ import collections
 import json
 import smtplib
 from datetime import date, timedelta
-from itertools import groupby
+from itertools import chain, groupby
 
 import requests
 from dateutil.parser import parse
@@ -31,23 +31,35 @@ def num_to_order(num):
     return str(num) + suffix
 
 
-def calculate_income(appointment_list, pay_scale):
+def get_appt_payment(appt, pay_scales):
+    appt_duration = appt["duration"] + "-minute"
+    appt_date = parse(appt["datetime"]).date()
+    for pay_scale_dt, pay_scale in sorted(pay_scales.items(), reverse=True):
+        if appt_date >= parse(pay_scale_dt).date():
+            return float(pay_scale.get(appt_duration, 0.0))
+
+def calculate_income(appt_list, pay_scales):
     cumulative_payment = 0.0
-    appointment_durations = []
-    for appointment in appointment_list:
-        duration = appointment["duration"] + "-minute"
-        appointment_durations.append(duration)
-        payment = float(pay_scale.get(duration, 0.0))
+    appt_duration_pay_combos = []
+    for appt in appt_list:
+        duration = appt["duration"] + "-minute"
+        payment = get_appt_payment(appt, pay_scales)
+        appt_duration_pay_combos.append((duration, payment))
         cumulative_payment += payment
 
     # Count number of each appointment
-    appointment_count = collections.Counter(appointment_durations)
+    appointment_count = collections.Counter(appt_duration_pay_combos)
 
     # Print out the results
     log("  Total Income: $" + str(cumulative_payment))
-    log("  Total Appointments: " + str(len(appointment_list)))
-    for duration, pay in sorted(pay_scale.items(), key=lambda x: x[0]):
-        num_appts = appointment_count[duration]
+    log("  Total Appointments: " + str(len(appt_list)))
+    uniq_pay_scales = sorted(set(chain(*(
+            list(v.items()) for v in list(pay_scales.values())
+        ))),
+        key=lambda x: (int(x[0].replace("-minute", "")), x[1])
+    )
+    for duration, pay in uniq_pay_scales:
+        num_appts = appointment_count[(duration, pay)]
         if num_appts > 0:
             log("  {0}: {1} at ${2} each = ${3}"
                 .format(duration, num_appts, pay, pay * num_appts))
@@ -59,7 +71,7 @@ def main():
     acuity_url = config["acuity"]["api_url"]
     acuity_user_id = config["acuity"]["user_id"]
     acuity_api_key = config["acuity"]["api_key"]
-    pay_scale = config["pay_scale"]
+    pay_scales = config["pay_scales"]
     gmail_user = config["gmail"]["user"]
     gmail_app_password = config["gmail"]["app_password"]
     email_recipients = config["email"]["recipients"]
@@ -119,7 +131,7 @@ def main():
             if (parse(appt["datetime"]).date() >= pay_period_start_date) and
                (parse(appt["datetime"]).date() < pay_period_end_date)
         ]
-        calculate_income(pay_period_appointment_list, pay_scale)
+        calculate_income(pay_period_appointment_list, pay_scales)
         pay_period_start_date = pay_period_end_date
         log("")
 
