@@ -103,8 +103,10 @@ def main():
         appt_duration = appt["duration"]
 
         if len(appt["forms"]) > 0:
-            appt_reason = [x for x in appt["forms"][0]["values"]
-                           if x["fieldID"] == 2451841][0]["value"].strip()
+            appt_reason = next(
+                (x for x in appt["forms"][0]["values"]
+                 if x["fieldID"] == 2451841), {}
+            ).get("value", "").strip()
         else:
             appt_reason = ""
 
